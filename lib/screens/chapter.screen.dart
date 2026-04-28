@@ -6,8 +6,35 @@ import 'package:manga_tracker/services/manga.service.dart';
 import 'package:manga_tracker/styles/colors.style.dart';
 import 'package:manga_tracker/types/manga.type.dart';
 import 'package:image/image.dart' as img;
-import 'dart:typed_data';
 import 'package:http/http.dart' as http;
+
+class ReaderSettings {
+  final bool sliceLargeImages;
+  final int sliceThreshold;
+  final int sliceHeight;
+  final double pageSpacing;
+
+  const ReaderSettings({
+    this.sliceLargeImages = false,
+    this.sliceThreshold = 3000,
+    this.sliceHeight = 1200,
+    this.pageSpacing = 0,
+  });
+
+  ReaderSettings copyWith({
+    bool? sliceLargeImages,
+    int? sliceThreshold,
+    int? sliceHeight,
+    double? pageSpacing,
+  }) {
+    return ReaderSettings(
+      sliceLargeImages: sliceLargeImages ?? this.sliceLargeImages,
+      sliceThreshold: sliceThreshold ?? this.sliceThreshold,
+      sliceHeight: sliceHeight ?? this.sliceHeight,
+      pageSpacing: pageSpacing ?? this.pageSpacing,
+    );
+  }
+}
 
 class ChapterScreen extends StatefulWidget {
   final String slug;
@@ -28,7 +55,9 @@ class ChapterScreen extends StatefulWidget {
 class _ChapterScreenState extends State<ChapterScreen> {
   ChapterContent? _content;
   bool _showControls = false;
+  bool _showSettings = false;
   int _currentPage = 0;
+  ReaderSettings _settings = const ReaderSettings();
 
   late MangaService _pageService;
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -62,10 +91,8 @@ class _ChapterScreenState extends State<ChapterScreen> {
   void _updateProgress() {
     final positions = _itemPositionsListener.itemPositions.value;
     if (positions.isEmpty) return;
-
     final sorted = positions.toList()
       ..sort((a, b) => a.index.compareTo(b.index));
-
     setState(() => _currentPage = sorted.first.index + 1);
   }
 
@@ -73,7 +100,6 @@ class _ChapterScreenState extends State<ChapterScreen> {
     setState(() => _content = null);
     final content = await _pageService.getPageList(widget.chapterSlug);
     if (!mounted) return;
-
     final processedPages = await _processPages(content.pages);
     setState(() => _content = content.copyWith(pages: processedPages));
   }
@@ -90,16 +116,15 @@ class _ChapterScreenState extends State<ChapterScreen> {
       final original = img.decodeImage(response.bodyBytes);
       if (original == null) continue;
 
-      // Ha a kép magassága nagyobb mint 3000px, felszeleteljük
-      if (original.height > 3000) {
-        const sliceHeight = 1200;
+      if (_settings.sliceLargeImages &&
+          original.height > _settings.sliceThreshold) {
         int y = 0;
         int sliceIndex = 0;
 
         while (y < original.height) {
-          final height = (y + sliceHeight > original.height)
+          final height = (y + _settings.sliceHeight > original.height)
               ? original.height - y
-              : sliceHeight;
+              : _settings.sliceHeight;
 
           final slice = img.copyCrop(
             original,
@@ -118,7 +143,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
             ),
           );
 
-          y += sliceHeight;
+          y += _settings.sliceHeight;
           sliceIndex++;
         }
       } else {
@@ -130,7 +155,10 @@ class _ChapterScreenState extends State<ChapterScreen> {
   }
 
   void _toggleControls() {
-    setState(() => _showControls = !_showControls);
+    setState(() {
+      _showControls = !_showControls;
+      if (!_showControls) _showSettings = false;
+    });
   }
 
   void _navigateToChapter(ChapterSlug chapterSlug) {
@@ -169,13 +197,183 @@ class _ChapterScreenState extends State<ChapterScreen> {
             itemScrollController: _itemScrollController,
             itemPositionsListener: _itemPositionsListener,
             itemCount: pages.length,
-            itemBuilder: (context, index) => _buildPageImage(pages[index]),
+            itemBuilder: (context, index) => Column(
+              children: [
+                _buildPageImage(pages[index]),
+                if (_settings.pageSpacing > 0)
+                  SizedBox(height: _settings.pageSpacing),
+              ],
+            ),
           ),
         ),
 
         if (_showControls) ...[_buildTopBar(), _buildBottomBar()],
 
+        if (_showSettings) _buildSettingsPanel(),
+
         _buildProgressBar(),
+      ],
+    );
+  }
+
+  Widget _buildSettingsPanel() {
+    return Positioned(
+      top: 0,
+      right: 0,
+      bottom: 0,
+      width: 260,
+      child: GestureDetector(
+        onTap: () {}, // ne zárja be ha rákattint
+        child: Container(
+          color: const Color(0xF0111111),
+          padding: EdgeInsets.only(
+            top: MediaQuery.of(context).padding.top + 16,
+            left: 16,
+            right: 16,
+            bottom: 24,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Olvasó beállítások',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Képtördelés toggle
+              _buildSettingsToggle(
+                label: 'Nagy képek tördelése',
+                value: _settings.sliceLargeImages,
+                onChanged: (val) => setState(
+                  () => _settings = _settings.copyWith(sliceLargeImages: val),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Tördelési magasság
+              if (_settings.sliceLargeImages) ...[
+                _buildSettingsSlider(
+                  label: 'Szelet magassága',
+                  value: _settings.sliceHeight.toDouble(),
+                  min: 600,
+                  max: 2400,
+                  divisions: 6,
+                  displayValue: '${_settings.sliceHeight}px',
+                  onChanged: (val) => setState(
+                    () => _settings = _settings.copyWith(
+                      sliceHeight: val.toInt(),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Tördelési küszöb
+                _buildSettingsSlider(
+                  label: 'Tördelési küszöb',
+                  value: _settings.sliceThreshold.toDouble(),
+                  min: 1000,
+                  max: 6000,
+                  divisions: 10,
+                  displayValue: '${_settings.sliceThreshold}px',
+                  onChanged: (val) => setState(
+                    () => _settings = _settings.copyWith(
+                      sliceThreshold: val.toInt(),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(height: 20),
+              ],
+
+              // Oldalak közötti távolság
+              _buildSettingsSlider(
+                label: 'Oldalak közötti távolság',
+                value: _settings.pageSpacing,
+                min: 0,
+                max: 32,
+                divisions: 8,
+                displayValue: '${_settings.pageSpacing.toInt()}px',
+                onChanged: (val) => setState(
+                  () => _settings = _settings.copyWith(pageSpacing: val),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsToggle({
+    required String label,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+        Switch(
+          value: value,
+          onChanged: onChanged,
+          activeColor: AppColors.primary,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingsSlider({
+    required String label,
+    required double value,
+    required double min,
+    required double max,
+    required int divisions,
+    required String displayValue,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 13),
+            ),
+            Text(
+              displayValue,
+              style: const TextStyle(
+                color: AppColors.primary,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: AppColors.primary,
+            inactiveTrackColor: Colors.white12,
+            thumbColor: AppColors.primary,
+            overlayColor: AppColors.primary.withOpacity(0.2),
+          ),
+          child: Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: divisions,
+            onChanged: onChanged,
+          ),
+        ),
       ],
     );
   }
@@ -285,7 +483,17 @@ class _ChapterScreenState extends State<ChapterScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(width: 38),
+            // Settings gomb
+            GestureDetector(
+              onTap: () => setState(() => _showSettings = !_showSettings),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: Icon(
+                  Icons.tune,
+                  color: _showSettings ? AppColors.primary : Colors.white,
+                ),
+              ),
+            ),
           ],
         ),
       ),
