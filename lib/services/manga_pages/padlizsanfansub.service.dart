@@ -50,9 +50,13 @@ class PadlizsanFanSubService extends MangaService {
           if (error.response?.statusCode == 401 &&
               error.requestOptions.extra["_retry"] != true) {
             error.requestOptions.extra["_retry"] = true;
-            await _login();
-            final retryResponse = await _dio.fetch(error.requestOptions);
-            return handler.resolve(retryResponse);
+            try {
+              await _login();
+              final retryResponse = await _dio.fetch(error.requestOptions);
+              return handler.resolve(retryResponse);
+            } catch (_) {
+              return handler.next(error);
+            }
           }
           return handler.next(error);
         },
