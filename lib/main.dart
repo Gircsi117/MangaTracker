@@ -71,6 +71,7 @@ class MainApp extends StatelessWidget {
                 slug: args['slug'],
                 chapterSlug: args['chapterSlug'],
                 service: args['service'] as MangaService,
+                initialSettings: args['initialSettings'] as ReaderSettings?,
               );
               break;
             default:

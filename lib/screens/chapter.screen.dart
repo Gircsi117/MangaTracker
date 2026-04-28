@@ -40,12 +40,14 @@ class ChapterScreen extends StatefulWidget {
   final String slug;
   final ChapterSlug chapterSlug;
   final MangaService service;
+  final ReaderSettings? initialSettings;
 
   const ChapterScreen({
     super.key,
     required this.slug,
     required this.chapterSlug,
     required this.service,
+    this.initialSettings,
   });
 
   @override
@@ -57,7 +59,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
   bool _showControls = false;
   bool _showSettings = false;
   int _currentPage = 0;
-  ReaderSettings _settings = const ReaderSettings();
+  late ReaderSettings _settings;
 
   late MangaService _pageService;
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -67,6 +69,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
   @override
   void initState() {
     super.initState();
+    _settings = widget.initialSettings ?? const ReaderSettings();
     _pageService = widget.service.create(widget.slug);
     _loadPages();
     _hideSystemUI();
@@ -105,6 +108,8 @@ class _ChapterScreenState extends State<ChapterScreen> {
   }
 
   Future<List<ChapterPage>> _processPages(List<ChapterPage> pages) async {
+    if (!_settings.sliceLargeImages) return pages;
+
     final result = <ChapterPage>[];
 
     for (final page in pages) {
@@ -116,8 +121,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
       final original = img.decodeImage(response.bodyBytes);
       if (original == null) continue;
 
-      if (_settings.sliceLargeImages &&
-          original.height > _settings.sliceThreshold) {
+      if (original.height > _settings.sliceThreshold) {
         int y = 0;
         int sliceIndex = 0;
 
@@ -170,6 +174,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
         'slug': widget.slug,
         'chapterSlug': chapterSlug,
         'service': widget.service,
+        'initialSettings': _settings,
       },
     );
   }
@@ -286,7 +291,24 @@ class _ChapterScreenState extends State<ChapterScreen> {
                     ),
                   ),
                 ),
-                
+
+                const SizedBox(height: 16),
+
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: _loadPages,
+                    icon: const Icon(Icons.refresh, size: 16),
+                    label: const Text('Újragenerálás'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 20),
               ],
 
@@ -390,7 +412,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.only(right: 8, bottom: 2),
+            padding: const EdgeInsets.only(right: 20, bottom: 2),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
