@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import "package:flutter/services.dart";
+import "package:manga_tracker/db/db.dart";
 import "package:manga_tracker/services/credentials.service.dart";
 import "package:manga_tracker/modules/date.module.dart";
 import "package:manga_tracker/screens/chapter.screen.dart";
@@ -17,6 +18,7 @@ import "./screens/credentials.screen.dart";
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  await AppDatabase.init();
   await DateModule.init();
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   await CredentialsStore.instance.load();
