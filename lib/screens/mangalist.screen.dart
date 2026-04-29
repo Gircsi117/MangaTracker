@@ -203,12 +203,15 @@ class _MangaListScreenState extends State<MangaListScreen> {
                   httpHeaders: widget.service.headers,
                   fit: BoxFit.cover,
                   width: double.infinity,
+                  memCacheWidth: 300,
                   fadeInDuration: const Duration(milliseconds: 200),
                   placeholder: (context, url) => Container(
                     color: const Color.fromARGB(255, 0, 0, 0),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
+                    child: Center(
+                      child: Icon(
+                        Icons.menu_book_outlined,
+                        size: 32,
+                        color: AppColors.font.withValues(alpha: 0.15),
                       ),
                     ),
                   ),

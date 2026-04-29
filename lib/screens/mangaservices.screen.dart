@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:manga_tracker/registry/mangaservices.registry.dart';
 import 'package:manga_tracker/styles/colors.style.dart';
@@ -49,12 +50,35 @@ class MangaServicesScreen extends StatelessWidget {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  service.logoUrl,
-                                  headers: service.headers,
+                                child: CachedNetworkImage(
+                                  imageUrl: service.logoUrl,
+                                  httpHeaders: service.headers,
                                   width: 36,
                                   height: 36,
+                                  memCacheWidth: 72,
                                   fit: BoxFit.cover,
+                                  placeholder: (context, url) => const SizedBox(
+                                    width: 36,
+                                    height: 36,
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.image_outlined,
+                                        size: 18,
+                                        color: AppColors.fontMuted,
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      Container(
+                                        width: 36,
+                                        height: 36,
+                                        color: AppColors.imagePlaceholder,
+                                        child: const Icon(
+                                          Icons.broken_image_outlined,
+                                          size: 16,
+                                          color: AppColors.fontMuted,
+                                        ),
+                                      ),
                                 ),
                               ),
                               const SizedBox(width: 12),

@@ -459,8 +459,12 @@ class _ChapterScreenState extends State<ChapterScreen> {
           placeholder: (context, url) => SizedBox(
             width: constraints.maxWidth,
             height: height,
-            child: const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
+            child: Center(
+              child: Icon(
+                Icons.image_outlined,
+                size: 40,
+                color: Colors.white.withValues(alpha: 0.15),
+              ),
             ),
           ),
           errorWidget: (context, url, error) => SizedBox(

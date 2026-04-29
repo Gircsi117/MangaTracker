@@ -153,9 +153,11 @@ class _MangaDetailsScreenState extends State<MangaScreen> {
         children: [
           CachedNetworkImage(
             imageUrl: _manga?.coverUrl ?? "",
+            httpHeaders: widget.service.headers,
             fit: BoxFit.cover,
             width: double.infinity,
             height: 300,
+            memCacheWidth: 300,
             color: Colors.black.withValues(alpha: 0.5),
             colorBlendMode: BlendMode.darken,
           ),
@@ -199,9 +201,35 @@ class _MangaDetailsScreenState extends State<MangaScreen> {
               borderRadius: BorderRadius.circular(12),
               child: CachedNetworkImage(
                 imageUrl: _manga?.coverUrl ?? "",
+                httpHeaders: widget.service.headers,
                 width: 120,
                 height: 180,
+                memCacheWidth: 240,
+                memCacheHeight: 360,
                 fit: BoxFit.fill,
+                fadeInDuration: const Duration(milliseconds: 200),
+                placeholder: (context, url) => const SizedBox(
+                  width: 120,
+                  height: 180,
+                  child: Center(
+                    child: Icon(
+                      Icons.menu_book_outlined,
+                      size: 32,
+                      color: AppColors.imagePlaceholder,
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => const SizedBox(
+                  width: 120,
+                  height: 180,
+                  child: Center(
+                    child: Icon(
+                      Icons.broken_image_outlined,
+                      size: 32,
+                      color: AppColors.imagePlaceholder,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
