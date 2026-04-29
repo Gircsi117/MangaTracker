@@ -459,12 +459,23 @@ class _ChapterScreenState extends State<ChapterScreen> {
           placeholder: (context, url) => SizedBox(
             width: constraints.maxWidth,
             height: height,
-            child: Center(
-              child: Icon(
-                Icons.image_outlined,
-                size: 40,
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.image_outlined,
+                  size: 40,
+                  color: AppColors.font.withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Betöltés...',
+                  style: TextStyle(
+                    color: AppColors.font.withValues(alpha: 0.4),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
           ),
           errorWidget: (context, url, error) => SizedBox(

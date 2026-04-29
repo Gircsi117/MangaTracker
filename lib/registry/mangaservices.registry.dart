@@ -7,6 +7,7 @@ import 'package:manga_tracker/services/manga_pages/manhwamania.service.dart';
 import 'package:manga_tracker/services/manga_pages/padlizsanfansub.service.dart';
 import 'package:manga_tracker/services/manga_pages/toonverse.service.dart';
 import 'package:manga_tracker/services/manga.service.dart';
+import 'package:manga_tracker/services/manga_pages/vortexscans.service.dart';
 
 final List<MangaService> mangaServicesRegistry = [
   KecskeFanSubService(),
@@ -17,4 +18,5 @@ final List<MangaService> mangaServicesRegistry = [
   MangaBuddyService(),
   ManhwaManiaService(),
   PadlizsanFanSubService(),
+  VortexScansService(),
 ]..sort((a, b) => a.name.compareTo(b.name));

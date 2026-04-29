@@ -96,23 +96,30 @@ class KecskeFanSubService extends MangaService {
 
       final links = document.querySelectorAll(".card-link-wrapper");
 
-      final mangas = links.map((link) {
-        final href = link.attributes["href"] ?? "";
-        final slug = href.split("/").where((s) => s.isNotEmpty).last;
-        final img = link.querySelector(".card-main-image");
-        final coverUrl = _setUrl(img?.attributes["src"] ?? "");
-        final title = img?.attributes["alt"] ?? "Unknown";
+      final mangas = links
+          .map((link) {
+            final href = link.attributes["href"] ?? "";
+            final slug = href.split("/").where((s) => s.isNotEmpty).last;
+            final img = link.querySelector(".card-main-image");
+            final coverUrl = _setUrl(img?.attributes["src"] ?? "");
+            final title = img?.attributes["alt"] ?? "Unknown";
 
-        return Manga(
-          id: slug.isNotEmpty ? slug : null,
-          slug: slug,
-          title: title,
-          coverUrl: coverUrl,
-          author: "",
-          type: "",
-          description: "",
-        );
-      }).where((m) => m.slug.isNotEmpty && m.title.toLowerCase().contains(query.toLowerCase())).toList();
+            return Manga(
+              id: slug.isNotEmpty ? slug : null,
+              slug: slug,
+              title: title,
+              coverUrl: coverUrl,
+              author: "",
+              type: "",
+              description: "",
+            );
+          })
+          .where(
+            (m) =>
+                m.slug.isNotEmpty &&
+                m.title.toLowerCase().contains(query.toLowerCase()),
+          )
+          .toList();
 
       final paginated = mangas.skip(offset).take(limit).toList();
       return PaginatedList(items: paginated, totalCount: mangas.length);
@@ -135,7 +142,8 @@ class KecskeFanSubService extends MangaService {
       final coverUrl = _setUrl(img?.attributes["src"] ?? "");
       final title = img?.attributes["alt"] ?? "";
 
-      final description = dataDiv
+      final description =
+          dataDiv
               ?.querySelector(".series-description-box")
               ?.querySelector("p")
               ?.text ??
@@ -183,13 +191,15 @@ class KecskeFanSubService extends MangaService {
         final title =
             item.querySelector(".series-chapter-number")?.text.trim() ?? "";
         final number = double.tryParse(chapterSlug) ?? 0;
+        final date =
+            item.querySelector(".series-chapter-time")?.text.trim() ?? "";
 
         return Chapter(
           id: chapterSlug.isNotEmpty ? chapterSlug : null,
           slug: chapterSlug,
           number: number,
           title: title,
-          publishedAt: "",
+          publishedAt: date,
         );
       }).toList();
 
@@ -209,10 +219,7 @@ class KecskeFanSubService extends MangaService {
 
       final pages = images.asMap().entries.map((entry) {
         final url = entry.value.attributes["src"] ?? "";
-        return ChapterPage(
-          index: entry.key,
-          imageUrl: _setUrl(url),
-        );
+        return ChapterPage(index: entry.key, imageUrl: _setUrl(url));
       }).toList();
 
       final curr = await getRelativeChapter(chapterSlug, 0);

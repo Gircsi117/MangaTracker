@@ -194,12 +194,7 @@ class AsuraScansService extends MangaService {
         prevChapter: prev,
       );
     } catch (e) {
-      return ChapterContent(
-        pages: [],
-        currChapter: null,
-        nextChapter: null,
-        prevChapter: null,
-      );
+      return ChapterContent.empty();
     }
   }
 }

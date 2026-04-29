@@ -53,6 +53,12 @@ class ChapterContent {
     this.prevChapter,
   });
 
+  ChapterContent.empty()
+    : pages = [],
+      currChapter = null,
+      nextChapter = null,
+      prevChapter = null;
+
   ChapterContent copyWith({
     List<ChapterPage>? pages,
     Chapter? currChapter,
