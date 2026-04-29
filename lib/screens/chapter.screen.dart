@@ -60,6 +60,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
   bool _showSettings = false;
   int _currentPage = 0;
   late ReaderSettings _settings;
+  bool _replacedByChapter = false;
 
   late MangaService _pageService;
   final ItemScrollController _itemScrollController = ItemScrollController();
@@ -72,13 +73,15 @@ class _ChapterScreenState extends State<ChapterScreen> {
     _settings = widget.initialSettings ?? const ReaderSettings();
     _pageService = widget.service.create(widget.slug);
     _loadPages();
-    _hideSystemUI();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _hideSystemUI();
+    });
     _itemPositionsListener.itemPositions.addListener(_updateProgress);
   }
 
   @override
   void dispose() {
-    _showSystemUI();
+    if (!_replacedByChapter) _showSystemUI();
     _itemPositionsListener.itemPositions.removeListener(_updateProgress);
     super.dispose();
   }
@@ -103,7 +106,10 @@ class _ChapterScreenState extends State<ChapterScreen> {
     setState(() => _content = null);
     final content = await _pageService.getPageList(widget.chapterSlug);
     if (!mounted) return;
+
     final processedPages = await _processPages(content.pages);
+    if (!mounted) return;
+
     setState(() => _content = content.copyWith(pages: processedPages));
   }
 
@@ -166,6 +172,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
   }
 
   void _navigateToChapter(ChapterSlug chapterSlug) {
+    _replacedByChapter = true;
     _itemScrollController.jumpTo(index: 0);
     Navigator.pushReplacementNamed(
       context,
@@ -521,11 +528,14 @@ class _ChapterScreenState extends State<ChapterScreen> {
         child: Row(
           children: [
             GestureDetector(
-              onTap: () => Navigator.pushNamed(
-                context,
-                '/manga',
-                arguments: {'slug': widget.slug, 'service': widget.service},
-              ),
+              onTap: () {
+                _showSystemUI();
+                Navigator.pushNamed(
+                  context,
+                  '/manga',
+                  arguments: {'slug': widget.slug, 'service': widget.service},
+                );
+              },
               child: Container(
                 padding: const EdgeInsets.all(8),
                 child: const Icon(Icons.arrow_back, color: Colors.white),
