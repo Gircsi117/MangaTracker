@@ -203,11 +203,36 @@ class _MangaListScreenState extends State<MangaListScreen> {
                   httpHeaders: widget.service.headers,
                   fit: BoxFit.cover,
                   width: double.infinity,
-                  placeholder: (context, url) =>
-                      Container(color: AppColors.imagePlaceholder),
-                  errorWidget: (context, url, error) =>
-                      Container(color: AppColors.imagePlaceholder),
-                  fadeInDuration: Duration(milliseconds: 200),
+                  fadeInDuration: const Duration(milliseconds: 200),
+                  placeholder: (context, url) => Container(
+                    color: const Color.fromARGB(255, 0, 0, 0),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: const Color.fromARGB(255, 0, 0, 0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.broken_image_outlined,
+                          size: 28,
+                          color: AppColors.font.withValues(alpha: 0.3),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Hiba',
+                          style: TextStyle(
+                            color: AppColors.font.withValues(alpha: 0.4),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
