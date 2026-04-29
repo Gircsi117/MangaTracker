@@ -14,13 +14,13 @@ class ManhwaManiaService extends MangaService {
   String get name => "ManhwaMania";
 
   @override
-  String get baseUrl => "https://manhwamania.hu/api";
+  String get baseUrl => "http://manhwamania.hu/api";
 
   @override
-  String get origin => "https://manhwamania.hu";
+  String get origin => "http://manhwamania.hu";
 
   @override
-  String get referer => "https://manhwamania.hu";
+  String get referer => "http://manhwamania.hu";
 
   @override
   String get logoUrl =>

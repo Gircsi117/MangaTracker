@@ -129,6 +129,33 @@ class _MangaListScreenState extends State<MangaListScreen> {
       );
     }
 
+    if (_searchState.mangas.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.search_off_rounded,
+                size: 48,
+                color: AppColors.font.withValues(alpha: 0.3),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'A keresett oldal nem elérhető, vagy a szűrők alapján nem található tartalom!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.font.withValues(alpha: 0.4),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Column(
       children: [
         Expanded(

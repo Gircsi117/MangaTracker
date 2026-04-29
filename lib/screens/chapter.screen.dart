@@ -304,7 +304,10 @@ class _ChapterScreenState extends State<ChapterScreen> {
                       foregroundColor: AppColors.primary,
                       side: const BorderSide(color: AppColors.primary),
                       padding: const EdgeInsets.symmetric(vertical: 10),
-                      textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      textStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ),
@@ -346,7 +349,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: AppColors.primary,
+          activeThumbColor: AppColors.primary,
         ),
       ],
     );
@@ -386,7 +389,7 @@ class _ChapterScreenState extends State<ChapterScreen> {
             activeTrackColor: AppColors.primary,
             inactiveTrackColor: Colors.white12,
             thumbColor: AppColors.primary,
-            overlayColor: AppColors.primary.withOpacity(0.2),
+            overlayColor: AppColors.primary.withValues(alpha: 0.2),
           ),
           child: Slider(
             value: value,
@@ -445,6 +448,8 @@ class _ChapterScreenState extends State<ChapterScreen> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        final double height = constraints.maxWidth * 1.5;
+
         return CachedNetworkImage(
           imageUrl: page.imageUrl,
           httpHeaders: widget.service.headers,
@@ -453,13 +458,32 @@ class _ChapterScreenState extends State<ChapterScreen> {
           fadeInDuration: const Duration(milliseconds: 200),
           placeholder: (context, url) => SizedBox(
             width: constraints.maxWidth,
-            height: constraints.maxWidth * 1.5,
-            child: Container(color: AppColors.imagePlaceholder),
+            height: height,
+            child: const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
           ),
           errorWidget: (context, url, error) => SizedBox(
             width: constraints.maxWidth,
-            height: constraints.maxWidth * 1.5,
-            child: Container(color: AppColors.imagePlaceholder),
+            height: height,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.broken_image_outlined,
+                  size: 36,
+                  color: AppColors.font.withValues(alpha: 0.3),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'A kép nem tölthető be',
+                  style: TextStyle(
+                    color: AppColors.font.withValues(alpha: 0.4),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

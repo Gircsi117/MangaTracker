@@ -1,13 +1,10 @@
-// lib/screens/manga_details.screen.dart
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:manga_tracker/services/credentials.service.dart';
 import 'package:manga_tracker/services/manga.service.dart';
 import 'package:manga_tracker/styles/colors.style.dart';
 import 'package:manga_tracker/types/manga.type.dart';
 import 'package:manga_tracker/widgets/navbar.widget.dart';
 import 'package:photo_view/photo_view.dart';
-import 'package:provider/provider.dart';
 
 class MangaScreen extends StatefulWidget {
   final String slug;
@@ -23,6 +20,7 @@ class _MangaDetailsScreenState extends State<MangaScreen> {
   Manga? _manga;
   List<Chapter> _chapters = [];
   bool _isReversed = false;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -39,6 +37,7 @@ class _MangaDetailsScreenState extends State<MangaScreen> {
     setState(() {
       _manga = manga;
       _chapters = chapters;
+      _isLoading = false;
     });
   }
 
@@ -79,13 +78,46 @@ class _MangaDetailsScreenState extends State<MangaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: _manga == null
-          ? const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            )
-          : _buildContent(),
+      body: _buildBody(),
       bottomNavigationBar: Navbar(),
     );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
+
+    if (_manga == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.search_off_rounded,
+                size: 48,
+                color: AppColors.font.withValues(alpha: 0.3),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Az oldal nem elérhető, vagy a tartalom nem található!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.font.withValues(alpha: 0.4),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return _buildContent();
   }
 
   Widget _buildContent() {
@@ -124,7 +156,7 @@ class _MangaDetailsScreenState extends State<MangaScreen> {
             fit: BoxFit.cover,
             width: double.infinity,
             height: 300,
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             colorBlendMode: BlendMode.darken,
           ),
           Container(
@@ -144,18 +176,9 @@ class _MangaDetailsScreenState extends State<MangaScreen> {
   Widget _buildTopBar() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back, color: AppColors.fontMuted),
-          ),
-          const Spacer(),
-          IconButton(
-            onPressed: () {}, // external link
-            icon: const Icon(Icons.open_in_new, color: AppColors.fontMuted),
-          ),
-        ],
+      child: IconButton(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(Icons.arrow_back, color: AppColors.fontMuted),
       ),
     );
   }
@@ -281,7 +304,7 @@ class _MangaDetailsScreenState extends State<MangaScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.16),
+                color: AppColors.primary.withValues(alpha: 0.16),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(

@@ -51,10 +51,10 @@ class MangaServicesScreen extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(8),
                                 child: Image.network(
                                   service.logoUrl,
+                                  headers: service.headers,
                                   width: 36,
                                   height: 36,
                                   fit: BoxFit.cover,
-                                  headers: service.headers,
                                 ),
                               ),
                               const SizedBox(width: 12),
