@@ -177,7 +177,11 @@ class _MangaDetailsScreenState extends State<MangaScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: IconButton(
-        onPressed: () => Navigator.pop(context),
+        onPressed: () => Navigator.pushNamed(
+          context,
+          '/manga_list',
+          arguments: widget.service,
+        ),
         icon: const Icon(Icons.arrow_back, color: AppColors.fontMuted),
       ),
     );

@@ -12,6 +12,7 @@ import "screens/mangaservices.screen.dart";
 import "./screens/library.screen.dart";
 import "./screens/history.screen.dart";
 import "./screens/settings.screen.dart";
+import "./screens/credentials.screen.dart";
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -81,6 +82,7 @@ class MainApp extends StatelessWidget {
                 '/history': const HistoryScreen(),
                 '/manga_services': const MangaServicesScreen(),
                 '/settings': const SettingsScreen(),
+                '/credentials': const CredentialsScreen(),
               };
               screen = routes[settings.name] ?? const LibraryScreen();
           }
